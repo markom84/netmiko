@@ -157,17 +157,15 @@ class CiscoBaseConnection(BaseConnection):
         msg = f"Login failed: {self.host}"
         raise NetmikoAuthenticationException(msg)
 
-    def cleanup(self, command="exit"):
+    def cleanup(self):
         """Gracefully exit the SSH session."""
         try:
-            # The pattern="" forces use of send_command_timing
-            if self.check_config_mode(pattern=""):
-                self.exit_config_mode()
+            self.exit_config_mode()
         except Exception:
             pass
-        # Always try to send final 'exit' (command)
+        # Always try to send final 'exit' regardless of whether exit_config_mode works or not.
         self._session_log_fin = True
-        self.write_channel(command + self.RETURN)
+        self.write_channel("exit" + self.RETURN)
 
     def _autodetect_fs(self, cmd="dir", pattern=r"Directory of (.*)/"):
         """Autodetect the file system on the remote device. Used by SCP operations."""

@@ -48,7 +48,7 @@ from netmiko.f5 import F5LinuxSSH
 from netmiko.flexvnf import FlexvnfSSH
 from netmiko.fortinet import FortinetSSH
 from netmiko.hp import HPProcurveSSH, HPProcurveTelnet, HPComwareSSH, HPComwareTelnet
-from netmiko.huawei import HuaweiSSH, HuaweiVrpv8SSH, HuaweiTelnet
+from netmiko.huawei import HuaweiSSH, HuaweiOLT, HuaweiVrpv8SSH, HuaweiTelnet
 from netmiko.ipinfusion import IpInfusionOcNOSSSH, IpInfusionOcNOSTelnet
 from netmiko.juniper import JuniperSSH, JuniperTelnet, JuniperScreenOsSSH
 from netmiko.juniper import JuniperFileTransfer
@@ -76,8 +76,6 @@ from netmiko.terminal_server import TerminalServerSSH
 from netmiko.terminal_server import TerminalServerTelnet
 from netmiko.ubiquiti import UbiquitiEdgeSSH
 from netmiko.vyos import VyOSSSH
-from netmiko.watchguard import WatchguardFirewareSSH
-
 
 # The keys of this dictionary are the supported device_types
 CLASS_MAPPER_BASE = {
@@ -137,6 +135,7 @@ CLASS_MAPPER_BASE = {
     "hp_comware": HPComwareSSH,
     "hp_procurve": HPProcurveSSH,
     "huawei": HuaweiSSH,
+    "huawei_olt": HuaweiOLT,
     "huawei_vrpv8": HuaweiVrpv8SSH,
     "ipinfusion_ocnos": IpInfusionOcNOSSSH,
     "juniper": JuniperSSH,
@@ -166,7 +165,6 @@ CLASS_MAPPER_BASE = {
     "ubiquiti_edgeswitch": UbiquitiEdgeSSH,
     "vyatta_vyos": VyOSSSH,
     "vyos": VyOSSSH,
-    "watchguard_fireware": WatchguardFirewareSSH,
 }
 
 FILE_TRANSFER_MAP = {

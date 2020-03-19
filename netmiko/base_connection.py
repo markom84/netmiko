@@ -1083,6 +1083,8 @@ class BaseConnection(object):
         delay_factor = self.select_delay_factor(delay_factor)
         self.clear_buffer()
         self.write_channel(self.RETURN)
+        self.write_channel(" ")
+        self.write_channel(self.RETURN)
         sleep_time = delay_factor * 0.1
         time.sleep(sleep_time)
 
@@ -1096,6 +1098,7 @@ class BaseConnection(object):
             prompt = self.read_channel().strip()
             if not prompt:
                 self.write_channel(self.RETURN)
+                self.write_channel(" ")
                 # log.debug(f"find_prompt sleep time: {sleep_time}")
                 time.sleep(sleep_time)
                 if sleep_time <= 3:
@@ -1141,8 +1144,7 @@ class BaseConnection(object):
         use_textfsm=False,
         textfsm_template=None,
         use_genie=False,
-        cmd_verify=False,
-        cmd_echo=None,
+        cmd_echo=False,
     ):
         """Execute command_string on the SSH channel using a delay-based mechanism. Generally
         used for show commands.
@@ -1176,16 +1178,9 @@ class BaseConnection(object):
         :param use_genie: Process command output through PyATS/Genie parser (default: False).
         :type use_genie: bool
 
-        :param cmd_verify: Verify command echo before proceeding (default: False).
-        :type cmd_verify: bool
-
-        :param cmd_echo: Deprecated (use cmd_verify instead)
+        :param cmd_echo: Verify command echo before proceeding (default: False).
         :type cmd_echo: bool
         """
-        # For compatibility remove cmd_echo in Netmiko 4.x.x
-        if cmd_echo is not None:
-            cmd_verify = cmd_echo
-
         output = ""
         delay_factor = self.select_delay_factor(delay_factor)
         self.clear_buffer()
@@ -1196,7 +1191,7 @@ class BaseConnection(object):
 
         cmd = command_string.strip()
         # if cmd is just an "enter" skip this section
-        if cmd and cmd_verify:
+        if cmd and cmd_echo:
             # Make sure you read until you detect the command echo (avoid getting out of sync)
             new_data = self.read_until_pattern(pattern=re.escape(cmd))
             new_data = self.normalize_linefeeds(new_data)
@@ -1298,7 +1293,6 @@ class BaseConnection(object):
         use_textfsm=False,
         textfsm_template=None,
         use_genie=False,
-        cmd_verify=True,
     ):
         """Execute command_string on the SSH channel using a pattern-based mechanism. Generally
         used for show commands. By default this method will keep waiting to receive data until the
@@ -1336,9 +1330,6 @@ class BaseConnection(object):
 
         :param use_genie: Process command output through PyATS/Genie parser (default: False).
         :type normalize: bool
-
-        :param cmd_verify: Verify command echo before proceeding (default: True).
-        :type cmd_verify: bool
         """
         # Time to delay in each read loop
         loop_delay = 0.2
@@ -1372,8 +1363,8 @@ class BaseConnection(object):
         new_data = ""
 
         cmd = command_string.strip()
-        # if cmd is just an "enter" skip this section
-        if cmd and cmd_verify:
+        # if cmd is just and "enter" skip this section
+        if cmd:
             # Make sure you read until you detect the command echo (avoid getting out of sync)
             new_data = self.read_until_pattern(pattern=re.escape(cmd))
             new_data = self.normalize_linefeeds(new_data)
@@ -1711,10 +1702,9 @@ class BaseConnection(object):
             raise ValueError("Invalid argument passed into send_config_set")
 
         # Send config commands
-        output = ""
         if enter_config_mode:
             cfg_mode_args = (config_mode_command,) if config_mode_command else tuple()
-            output += self.config_mode(*cfg_mode_args)
+            output = self.config_mode(*cfg_mode_args)
 
         if self.fast_cli:
             for cmd in config_commands:
@@ -1847,8 +1837,8 @@ class BaseConnection(object):
 
         return output
 
-    def cleanup(self, command=""):
-        """Logout of the session on the network device plus any additional cleanup."""
+    def cleanup(self):
+        """Any needed cleanup before closing connection."""
         pass
 
     def paramiko_cleanup(self):
@@ -1857,7 +1847,7 @@ class BaseConnection(object):
         del self.remote_conn_pre
 
     def disconnect(self):
-        """Try to gracefully close the session."""
+        """Try to gracefully close the SSH connection."""
         try:
             self.cleanup()
             if self.protocol == "ssh":

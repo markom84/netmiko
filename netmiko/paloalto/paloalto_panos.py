@@ -159,17 +159,15 @@ class PaloAltoPanosBase(BaseConnection):
         kwargs["delay_factor"] = kwargs.get("delay_factor", 2.5)
         return super().send_command(*args, **kwargs)
 
-    def cleanup(self, command="exit"):
+    def cleanup(self):
         """Gracefully exit the SSH session."""
         try:
-            # The pattern="" forces use of send_command_timing
-            if self.check_config_mode(pattern=""):
-                self.exit_config_mode()
+            self.exit_config_mode()
         except Exception:
+            # Always try to send 'exit' regardless of whether exit_config_mode works or not.
             pass
-        # Always try to send final 'exit' (command)
         self._session_log_fin = True
-        self.write_channel(command + self.RETURN)
+        self.write_channel("exit" + self.RETURN)
 
 
 class PaloAltoPanosSSH(PaloAltoPanosBase):

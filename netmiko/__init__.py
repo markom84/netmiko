@@ -34,6 +34,8 @@ __all__ = (
     "NetmikoAuthenticationException",
     "NetMikoTimeoutException",
     "NetMikoAuthenticationException",
+    "NetmikoTimeoutError",
+    "NetmikoAuthError",
     "InLineTransfer",
     "redispatch",
     "SSHDetect",
